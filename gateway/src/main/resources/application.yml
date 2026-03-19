@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: trustlens-gateway
+
+  cloud:
+    gateway:
+      default-filters:
+        - "AddResponseHeader=X-Response-Time, ${random.uuid}"
+
+      routes:
+        - id: analysis-service
+          uri: https://httpbin.org
+          predicates:
+            - Path=/**
+          filters:
+            - StripPrefix=2
+
+        - id: user-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v1/users/**
+
+logging:
+  level:
+    root: INFO
+    '[org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping]' : DEBUG
+    '[org.srpingframework.cloud.gateway]': TRACE
+    '[reactor.netty]': DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
